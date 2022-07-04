@@ -1,0 +1,76 @@
+#Naive Bayes
+
+veriler =read.table (file.choose(),header=T,sep=";")
+
+str(veriler)
+veriler[1]<-as.numeric(x=veriler[[1]])
+veriler[2]<-as.factor(x=veriler[[2]])
+veriler[3]<-as.factor(x=veriler[[3]])
+veriler[4]<-as.factor(x=veriler[[4]])
+veriler[5]<-as.factor(x=veriler[[5]])
+veriler[6]<-as.numeric(x=veriler[[6]])
+veriler[7]<-as.numeric(x=veriler[[7]])
+veriler[8]<-as.numeric(x=veriler[[8]])
+str(veriler)
+
+library("plyr")
+veriler$Solunum.Arresti <-revalue(veriler$Solunum.Arresti,c("1"="SAvar","0"="SAyok"))
+veriler$Solunum.Arresti <- relevel (veriler$Solunum.Arresti,ref="SAvar")
+
+library(clusterSim)
+veriler$Yaş <- data.Normalization(veriler$Yaş, type = "n4", normalization ="column")
+veriler$EKG <- data.Normalization(veriler$EKG, type = "n4", normalization ="column")
+veriler$Kan.Şekeri <- data.Normalization(veriler$Kan.Şekeri, type = "n4", normalization ="column")
+veriler$Hs.CRP <- data.Normalization(veriler$Hs.CRP, type = "n4", normalization ="column")
+
+library(caret)
+set.seed(1)
+verisetibolme <- createDataPartition(y=veriler$Solunum.Arresti, p=0.6,list=FALSE)
+
+egitim <- veriler[verisetibolme,]
+test <- veriler[-verisetibolme,]
+
+testNitelikleri <- test[,-4]
+testHedefNitelik <- test[[4]]
+egitimNitelikleri <- egitim [,-4]
+egitimHedefNitelik <- egitim [[4]]
+
+library(e1071)
+naiveBayes_modeli_kuruldu <- naiveBayes(egitimNitelikleri, egitimHedefNitelik)
+naiveBayes_modeli_kuruldu
+
+#modelin tahminleri bulunur
+(tahminiSiniflar <- predict(naiveBayes_modeli_kuruldu, testNitelikleri))
+
+#gercek siniflar ile tahmini siniflarin kiyasi
+(karisiklikmatrisi <- table(tahminiSiniflar, testHedefNitelik, dnn =c ("Tahmini Siniflar", "Gercek Siniflar")))
+(TP <- karisiklikmatrisi [1])
+(FP <- karisiklikmatrisi [3])
+(FN <- karisiklikmatrisi [2])
+(TN <- karisiklikmatrisi [4])
+
+#Performans değerlendirme ölçütleri hesaplandı
+paste0("Dogruluk = ",(Dogruluk <- (TP+TN)/sum(karisiklikmatrisi)))
+paste0("Hata = ",(Hata <- 1-Dogruluk))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
