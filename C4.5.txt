@@ -1,0 +1,79 @@
+#KARAR AGACI
+
+veriler =read.table (file.choose(),header=T,sep=";")
+veriler[1]<-as.numeric(x=veriler[[1]])
+veriler[2]<-as.factor(x=veriler[[2]])
+veriler[3]<-as.factor(x=veriler[[3]])
+veriler[4]<-as.factor(x=veriler[[4]])
+veriler[5]<-as.factor(x=veriler[[5]])
+
+#hedef nitelik solunum arresti 1 ile gösterilen değer SAvar, 0 ile gösterilen değer SAyok şeklinde dönüştürüldü.
+library("plyr")
+veriler$Solunum.Arresti <- revalue(veriler$Solunum.Arresti, c("1"="SAvar","0"="SAyok"))
+
+#Cinsiyet değişkeni 2 yerine Kadın 1 yerine Erkek atandı
+veriler$Cinsiyet <- revalue(veriler$Cinsiyet, c("2"="Kadın","1"="Erkek"))
+
+#kalan değişkenlerde 1 ile gösterilen değer yerine var , 0 ile gösterilen değer yerine yok atandı
+veriler$Kardiyo.Solunum.Arresti <-revalue(veriler$Kardiyo.Solunum.Arresti, c("1"="Var", "0"="Yok"))
+veriler$Hipoglisemik.Arresti <-revalue(veriler$Hipoglisemik.Arresti, c("1"="Var", "0"="Yok"))
+
+#Solunum Arresti değişkeninin referans değeri var olarak değiştitirildi
+veriler$Solunum.Arresti <- relevel(veriler$Solunum.Arresti, ref="SAvar")
+
+#Test ve eğitim veri seti rastgele ayrıldı
+library(caret)
+set.seed(1)
+egitimIndisleri <- createDataPartition(y=veriler$Solunum.Arresti, p=0.6, list=FALSE)
+egitim <- veriler[egitimIndisleri,]
+test <- veriler[-egitimIndisleri,]
+testNitelikleri <- test[,-4]
+testHedefNitelik <- test[[4]]
+egitimNitelikleri <- egitim [,-4]
+egitimHedefNitelik <- egitim [[4]]
+
+
+#C4.5 Karar Ağacı uygulaması
+library(RWeka)
+C45_modeli <- J48 (Solunum.Arresti ~ ., data =egitim)
+print(summary(C45_modeli))
+#niteliklere ait kazanç oranı değerleri
+GainRatioAttributeEval(Solunum.Arresti ~., data=egitim)
+
+#modelin sınıf tahminleri
+(tahminiSiniflar <- predict (C45_modeli, newdata= test[,-4]))
+
+#performans degerlendirmesi yapilir
+(karisiklikmatrisi <- table(tahminiSiniflar,test$Solunum.Arresti, dnn=c("Tahmini Siniflar", "Gercek Siniflar")))
+
+
+(TP <- karisiklikmatrisi [1])
+(FP <- karisiklikmatrisi [3])
+(FN <- karisiklikmatrisi [2])
+(TN <- karisiklikmatrisi [4])
+
+#performans degerlendirme olcutleri
+paste0("Dogruluk = ",(Dogruluk <- (TP+TN)/sum(karisiklikmatrisi)))
+paste0("Hata = ",(Hata <- 1-Dogruluk))
+
+#TPR=Duyarlilik orani
+paste0("TPR= ", (TPR <- TP/(TP+FN)))
+
+#SPC=Belirleyicilik orani
+paste0("SPC= ", (SPC <- TN/(FP+TN)))
+
+#PPV=kesinlik ya da pozitif ongoru degeri
+paste0("PPV= ", (PPV <- TP/(TP+FP)))
+
+#NPV=negatif ongoru degeri
+paste0("NPV= ", (NPV <- TN/(TN+FN)))
+
+#FPR=Yanlis pozitif orani
+paste0("FPR = ", (FPR <- FP/sum(karisiklikmatrisi)))
+
+#FNR=Yanlis negatif orani
+paste0("FNR=",(FNR <- FN/(FN+TP)))
+
+#F olcutu kesinlik ve duyarlilik olcutlerinin harmonik ortalamasi
+paste0("F_measure = ", (F_measure <- (2*PPV*TPR)/(PPV+TPR)))
+
