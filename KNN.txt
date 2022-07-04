@@ -1,0 +1,115 @@
+#KNN
+
+veriler =read.table (file.choose(),header=T,sep=";")
+veriler[1]<-as.numeric(x=veriler[[1]])
+veriler[2]<-as.factor(x=veriler[[2]])
+veriler[3]<-as.factor(x=veriler[[3]])
+veriler[4]<-as.factor(x=veriler[[4]])
+veriler[5]<-as.factor(x=veriler[[5]])
+veriler[6]<-as.numeric(x=veriler[[6]])
+veriler[7]<-as.numeric(x=veriler[[7]])
+veriler[8]<-as.numeric(x=veriler[[8]])
+
+data.frame(n_veriler)
+
+#hedef nitelik solunum arresti 1 ile gösterilen değer SAvar, 0 ile gösterilen değer SAyok şeklinde dönüştürüldü.
+library("plyr")
+veriler$Solunum.Arresti <- revalue(veriler$Solunum.Arresti, c("1"="SAvar","0"="SAyok"))
+
+#Cinsiyet değişkeni 2 yerine Kadın 1 yerine Erkek atandı
+veriler$Cinsiyet <- revalue(veriler$Cinsiyet, c("2"="Kadın","1"="Erkek"))
+
+#kalan değişkenlerde 1 ile gösterilen değer yerine var , 0 ile gösterilen değer yerine yok atandı
+veriler$Kardiyo.Solunum.Arresti <-revalue(veriler$Kardiyo.Solunum.Arresti, c("1"="Var", "0"="Yok"))
+veriler$Hipoglisemik.Arresti <-revalue(veriler$Hipoglisemik.Arresti, c("1"="Var", "0"="Yok"))
+
+#Solunum Arresti değişkeninin referans değeri var olarak değiştitirildi
+veriler$Solunum.Arresti <- relevel(veriler$Solunum.Arresti, ref="SAvar")
+
+#Sadece nümerik değerler taşıyan ve hedef niteliğin olduğu bir alt küme oluşturuldu.
+n_veriler <- veriler [, c(1,6,7,8,4)]
+#veri seti eğitim ve test veri seti olarak ayrılır.
+install.packages("caret")
+library(caret)
+set.seed(1)
+verisetibolme <- createDataPartition(y=n_veriler$Solunum.Arresti, p=0.6,list=FALSE)
+egitim <- n_veriler[verisetibolme,]
+test <- n_veriler[-verisetibolme,]
+#Ayrılan setteki hedef nitelik hem eğitim nitelikleri hem test niteliklerine ayrılır.
+
+#Yine hedef nitelik eğitim veri setinden oluşan eğitim hedef Niteliklerine hem de test hedef niteliklerine atanır.
+#Oluşturduğumuz n_veriler setinde sa 5. sırada o yüzden
+testNitelikleri <- test[,-5]
+testHedefNitelik <- test[[5]]
+egitimNitelikleri <- egitim [,-5]
+egitimHedefNitelik <- egitim [[5]]
+
+#k değeri 1 için
+#KNN uygulanabilmesi icin class() paketi yuklenir
+library(class)
+set.seed(1)
+(tahminiSiniflar = knn(egitimNitelikleri, testNitelikleri, egitimHedefNitelik, k=1))
+(karisiklikmatrisi <- table(tahminiSiniflar, testHedefNitelik, dnn =c ("Tahmini Siniflar", "Gercek Siniflar")))
+
+(TP <- karisiklikmatrisi [1])
+(FP <- karisiklikmatrisi [3])
+(FN <- karisiklikmatrisi [2])
+(TN <- karisiklikmatrisi [4])
+#performans degerlendirme olcutleri 
+paste0("Dogruluk = ",(Dogruluk <- (TP+TN)/sum(karisiklikmatrisi)))
+paste0("Hata = ",(Hata <- 1-Dogruluk))
+
+#K2 İÇİN
+(tahminiSiniflar = knn(egitimNitelikleri, testNitelikleri, egitimHedefNitelik, k=2))
+(karisiklikmatrisi <- table(tahminiSiniflar, testHedefNitelik, dnn =c ("Tahmini Siniflar", "Gercek Siniflar")))
+
+(TP <- karisiklikmatrisi [1])
+(FP <- karisiklikmatrisi [3])
+(FN <- karisiklikmatrisi [2])
+(TN <- karisiklikmatrisi [4])
+
+paste0("Dogruluk = ",(Dogruluk <- (TP+TN)/sum(karisiklikmatrisi)))
+paste0("Hata = ",(Hata <- 1-Dogruluk))
+
+#K3 İÇİN
+(tahminiSiniflar = knn(egitimNitelikleri, testNitelikleri, egitimHedefNitelik, k=3))
+(karisiklikmatrisi <- table(tahminiSiniflar, testHedefNitelik, dnn =c ("Tahmini Siniflar", "Gercek Siniflar")))
+
+(TP <- karisiklikmatrisi [1])
+(FP <- karisiklikmatrisi [3])
+(FN <- karisiklikmatrisi [2])
+(TN <- karisiklikmatrisi [4])
+
+paste0("Dogruluk = ",(Dogruluk <- (TP+TN)/sum(karisiklikmatrisi)))
+paste0("Hata = ",(Hata <- 1-Dogruluk))
+
+#K4 İÇİN
+(tahminiSiniflar = knn(egitimNitelikleri, testNitelikleri, egitimHedefNitelik, k=4))
+(karisiklikmatrisi <- table(tahminiSiniflar, testHedefNitelik, dnn =c ("Tahmini Siniflar", "Gercek Siniflar")))
+
+(TP <- karisiklikmatrisi [1])
+(FP <- karisiklikmatrisi [3])
+(FN <- karisiklikmatrisi [2])
+(TN <- karisiklikmatrisi [4])
+
+paste0("Dogruluk = ",(Dogruluk <- (TP+TN)/sum(karisiklikmatrisi)))
+paste0("Hata = ",(Hata <- 1-Dogruluk))
+
+#K5 İÇİN
+(tahminiSiniflar = knn(egitimNitelikleri, testNitelikleri, egitimHedefNitelik, k=5))
+(karisiklikmatrisi <- table(tahminiSiniflar, testHedefNitelik, dnn =c ("Tahmini Siniflar", "Gercek Siniflar")))
+
+(TP <- karisiklikmatrisi [1])
+(FP <- karisiklikmatrisi [3])
+(FN <- karisiklikmatrisi [2])
+(TN <- karisiklikmatrisi [4])
+
+paste0("Dogruluk = ",(Dogruluk <- (TP+TN)/sum(karisiklikmatrisi)))
+paste0("Hata = ",(Hata <- 1-Dogruluk))
+
+
+
+
+
+
+
