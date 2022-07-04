@@ -1,0 +1,83 @@
+veriler =read.table (file.choose(),header=T,sep=";")
+library("cluster")
+library("caret")
+library("plyr")
+str(veriler)
+data.frame(veriler)
+class(veriler$Yaş)
+veriler$Yaş=as.numeric(veriler$Yaş)
+
+class(veriler$Cinsiyet)
+veriler$Cinsiyet=as.factor(veriler$Cinsiyet)
+
+class(veriler$Kardiyo.Solunum.Arresti)
+veriler$Kardiyo.Solunum.Arresti=as.factor(veriler$Kardiyo.Solunum.Arresti)
+
+class(veriler$Solunum.Arresti)
+veriler$Solunum.Arresti=as.factor(veriler$Solunum.Arresti)
+
+class(veriler$Hipoglisemik.Arresti)
+veriler$Hipoglisemik.Arresti=as.factor(veriler$Hipoglisemik.Arresti)
+
+class(veriler$EKG)
+veriler$EKG=as.numeric(veriler$EKG)
+
+class(veriler$Kan.Şekeri)
+veriler$Kan.Şekeri=as.numeric(veriler$Kan.Şekeri)
+
+class(veriler$Hs.CRP)
+veriler$Hs.CRP=as.numeric(veriler$Hs.CRP)
+
+summary(veriler)
+
+#KUTU GRAFİKLERİ ÇİZİMİ
+hist(veriler$Yaş, col="red", main = "Yaş Histogram Grafiği")
+boxplot(veriler$Yaş, col="orange", main="Yas Kutu Grafiği")
+
+hist(veriler$EKG, col="red", main = "EKG Histogram Grafiği")
+boxplot(veriler$EKG, col="orange", main="EKG Kutu Grafiği")
+
+hist(veriler$Kan.Şekeri, col="red", main = "Kan Şekeri Histogram Grafiği")
+boxplot(veriler$Kan.Şekeri, col="orange", main="Kan Şekeri Kutu Grafiği")
+
+hist(veriler$Hs.CRP, col="red", main = "Hs CRP Histogram Grafiği")
+boxplot(veriler$Hs.CRP, col="orange", main="Hs CRP Kutu Grafiği")
+
+pairs( ~ Yaş+ EKG + Kan.Şekeri + Hs.CRP , data= veriler, col=" dark green", main= "Serpilme Diyagramları")
+
+
+#KATEGORİK DEĞİŞKENLERİN GRAFİK ÇİZİMİ
+veriler$Cinsiyet <- revalue(veriler$Cinsiyet, c("1"="Erkek","2"="Kadın"))
+veriler$Kardiyo.Solunum.Arresti <-revalue(veriler$Kardiyo.Solunum.Arresti, c("1"="Var", "0"="Yok"))
+veriler$Hipoglisemik.Arresti <-revalue(veriler$Hipoglisemik.Arresti, c("1"="Var", "0"="Yok"))
+veriler$Solunum.Arresti <-revalue(veriler$Solunum.Arresti, c("1"="SAVar", "0"="SAYok"))
+
+frekanscinsiyet <- table(veriler$Cinsiyet)
+barplot(frekanscinsiyet, col="purple" , main="Cinsiyet Dağılımları Grafiği",xlab="Kişi Sayısı",ylab = "Cinsiyet" , horiz = TRUE)
+
+frekansKardiyo.Solunum.Arresti <- table(veriler$Kardiyo.Solunum.Arresti)
+barplot(frekansKardiyo.Solunum.Arresti, col="purple" , main="Kardiyo Solunum Arresti Dağılım Grafiği",xlab="Kişi Sayısı",ylab = "Kardiyo Solunum Arresti" , horiz = TRUE)
+
+frekansHipoglisemik.Arresti <- table(veriler$Hipoglisemik.Arresti)
+barplot(frekansHipoglisemik.Arresti, col="purple" , main="Hipoglisemik Arresti Dağılım Grafiği",xlab="Kişi Sayısı",ylab = "Hipoglisemik Arresti" , horiz = TRUE)
+
+frekansSolunum.Arresti <- table(veriler$Solunum.Arresti)
+barplot(frekansSolunum.Arresti, col="purple" , main="Solunum Arresti Dağılım Grafiği",xlab="Kişi Sayısı",ylab = "Solunum Arresti" , horiz = TRUE)
+
+
+#NORMALİZASYON
+install.packages("clusterSim")
+library(clusterSim)
+
+veriler$Yaş <- data.Normalization(veriler$Yaş, type = "n4", normalization ="column")
+veriler$EKG <- data.Normalization(veriler$EKG, type = "n4", normalization ="column")
+veriler$Kan.Şekeri <- data.Normalization(veriler$Kan.Şekeri, type = "n4", normalization ="column")
+veriler$Hs.CRP <- data.Normalization(veriler$Hs.CRP, type = "n4", normalization ="column")
+summary(veriler$Yaş)
+summary(veriler$EKG)
+summary(veriler$Kan.Şekeri)
+summary(veriler$Hs.CRP)
+
+
+
+
